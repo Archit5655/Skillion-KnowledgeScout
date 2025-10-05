@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  name      String?
+  apiKey    String?   
+  docs      Document[] 
+  createdAt DateTime  @default(now())
+}
+
+model Document {
+  id          String   @id @default(uuid())
+  title       String
+  filename    String
+  ownerId     String
+  visibility  String   @default("private") 
+  shareToken  String? 
+  pages       Page[]
+  createdAt   DateTime @default(now())
+
+  owner User @relation(fields: [ownerId], references: [id])
+}
+
+model Page {
+  id         String   @id @default(uuid())
+  docId      String
+  pageNumber Int
+  text       String   @db.Text
+  embedding  Json?   
+
+  document Document @relation(fields: [docId], references: [id])
+
+  @@index([docId, pageNumber])
+}
